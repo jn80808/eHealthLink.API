@@ -8,7 +8,7 @@ namespace eHealthLink.API.Model
         public string? MiddleName { get; set; }
         public string? LastName { get; set; }
         public string? PreferredName { get; set; }
-        public DateTime? BirthDate { get; set; }
+        public string? BirthDate { get; set; }
         public int? Age { get; set; }
         public string? Sex { get; set; }
         public string? SocialSecurityNumber { get; set; }
@@ -31,7 +31,8 @@ namespace eHealthLink.API.Model
         public string? BillingState { get; set; }
         public string? BillingZip { get; set; }
         public string? Operation { get; set; }
-        public DateTime? CreatedAt { get; set; }
-        public Guid? PatientId { get; set; }
+        public string? CreatedAt { get; set; }
+        public string? PatientId { get; set; }
+        public string? PatientIdNumber { get; set; }
     }
 }

@@ -34,5 +34,7 @@ namespace eHealthLink.API.Model
         public string? CreatedAt { get; set; }
         public string? PatientId { get; set; }
         public string? PatientIdNumber { get; set; }
+
+        public List<PatientConsultLoop>loopData { get; set; }
     }
 }

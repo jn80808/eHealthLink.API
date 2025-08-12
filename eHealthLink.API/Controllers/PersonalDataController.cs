@@ -32,7 +32,7 @@ namespace eHealthLink.API.Controllers
 
 
         //HttpGet
-        [HttpGet]
+        [HttpGet("GetAll")]
         public async Task<IActionResult> GetData()
         {
             try
@@ -78,8 +78,8 @@ namespace eHealthLink.API.Controllers
 
 
         //HttpGet ID
-        [HttpGet("GenerateId/{ID}")]
-        public async Task<IActionResult> GenerateId(string? ID)
+        [HttpGet("GenerateId")]
+        public async Task<IActionResult> GenerateId()
         {
             try
             {
@@ -87,30 +87,28 @@ namespace eHealthLink.API.Controllers
                 using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@Operation", "GENERATEDID");
-                    command.Parameters.AddWithValue("@ID", string.IsNullOrWhiteSpace(ID) ? DBNull.Value : ID);
+                    command.Parameters.AddWithValue("@Operation", "GENERATEID"); 
 
                     await connection.OpenAsync();
 
-                    object result = await command.ExecuteScalarAsync(); //Retrive Single Value 
+                    object result = await command.ExecuteScalarAsync(); // retrieve single value
 
-                    if (result != null)
+                    if (result != null && result != DBNull.Value)
                     {
-                        return Ok(result.ToString);
+                        return Ok(result.ToString());
                     }
                     else
                     {
-                        return NotFound("No generated ID Found");
+                        return NotFound("No generated ID found");
                     }
-
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal Server Error" + ex.Message);
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
-
         }
+
 
 
         //HttpPost 
@@ -320,14 +318,13 @@ namespace eHealthLink.API.Controllers
         [HttpPost("PostDataFull")]
         public async Task<IActionResult> PostDataFull([FromBody] PersonalData model)
         {
-            
-
+            // Replace "null" strings with empty strings
             model.FirstName = model.FirstName == "null" ? string.Empty : model.FirstName;
             model.MiddleName = model.MiddleName == "null" ? string.Empty : model.MiddleName;
             model.LastName = model.LastName == "null" ? string.Empty : model.LastName;
             model.PreferredName = model.PreferredName == "null" ? string.Empty : model.PreferredName;
             model.BirthDate = model.BirthDate == "null" ? string.Empty : model.BirthDate;
-            model.Age = model.Age ?? 0;
+            model.Age ??= 0;
             model.Sex = model.Sex == "null" ? string.Empty : model.Sex;
             model.SocialSecurityNumber = model.SocialSecurityNumber == "null" ? string.Empty : model.SocialSecurityNumber;
             model.PreferredLanguage = model.PreferredLanguage == "null" ? string.Empty : model.PreferredLanguage;
@@ -353,13 +350,15 @@ namespace eHealthLink.API.Controllers
             model.PatientId = model.PatientId == "null" ? string.Empty : model.PatientId;
 
             string insertedPatientId = string.Empty;
-            using (var connection = new SqlConnection(_connectionString))
 
-                try
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
                 {
+                    await connection.OpenAsync();
+
                     using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
                     {
-                        await connection.OpenAsync();
                         command.CommandType = CommandType.StoredProcedure;
 
                         command.Parameters.AddWithValue("@Operation", "INSERT");
@@ -389,60 +388,159 @@ namespace eHealthLink.API.Controllers
                         command.Parameters.AddWithValue("@BillingCity", model.BillingCity);
                         command.Parameters.AddWithValue("@BillingState", model.BillingState);
                         command.Parameters.AddWithValue("@BillingZip", model.BillingZip);
-                        command.Parameters.AddWithValue("@Operation", model.Operation);
                         command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt);
                         command.Parameters.AddWithValue("@PatientId", model.PatientId);
 
-                        await command.ExecuteNonQueryAsync();
-
-                        //Read back PatientId
                         using (var reader = await command.ExecuteReaderAsync())
                         {
-                            if (reader.Read())
+                            if (await reader.ReadAsync())
                             {
                                 insertedPatientId = reader["PatientId"]?.ToString() ?? string.Empty;
                             }
                         }
-
                     }
-                    return Ok("Data Inserted Successfully");
 
-                    //Insert Loop records if present 
-
-                    if (model.loopData ! = null && model.loopData.LoopCount > 0)
+                    // Insert Loop records if present
+                    if (model.loopData != null && model.loopData.Count > 0)
                     {
+                        foreach (var loop in model.loopData)
+                        {
+                            using (var loopCommand = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                            {
+                                loopCommand.CommandType = CommandType.StoredProcedure;
 
+                                loopCommand.Parameters.AddWithValue("@Operation", "INSERT_CONSULTATION");
+                                loopCommand.Parameters.AddWithValue("@ConsultationId", loop.ConsultationId ?? string.Empty);
+                                loopCommand.Parameters.AddWithValue("@PatientId", insertedPatientId);
+                                loopCommand.Parameters.AddWithValue("@ConsultationDate", loop.ConsultationDate ?? string.Empty);
+                                loopCommand.Parameters.AddWithValue("@ConsultationType", loop.ConsultationType ?? string.Empty);
+                                loopCommand.Parameters.AddWithValue("@Reason", loop.Reason ?? string.Empty);
+                                loopCommand.Parameters.AddWithValue("@DoctorName", loop.DoctorName ?? string.Empty);
+                                loopCommand.Parameters.AddWithValue("@Notes", loop.Notes ?? string.Empty);
+                                loopCommand.Parameters.AddWithValue("@CreatedAt", loop.CreatedAt ?? (object)DBNull.Value);
+                                loopCommand.Parameters.AddWithValue("@VisitLoop", loop.VisitLoop ?? string.Empty);
+                                loopCommand.Parameters.AddWithValue("@LoopCount", loop.LoopCount ?? 0);
+
+                                await loopCommand.ExecuteNonQueryAsync();
+                            }
+                        }
                     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 }
 
-                catch (Exception ex)
-                {
-                    //Handle execeptions appropiately (logging,error response,etc.)
-                    return StatusCode(500, "Internal Server Error" + ex.Message);
-                }
-
+                return Ok("Data Inserted Successfully");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
         }
 
+        [HttpGet("GetDataFull/{patientId}")]
+        public async Task<IActionResult> GetDataFull(string? patientId)
+        {
+            try
+            {
+                PersonalData personalData = null;
+                List<PatientConsultLoop> loopList = new List<PatientConsultLoop>();
 
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
 
+                    // 1️⃣ Get main patient record
+                    string patientQuery = $"SELECT * FROM {_schema}.Tbl_Patients WHERE PatientId = @PatientId";
+                    using (var cmd = new SqlCommand(patientQuery, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@PatientId", patientId);
 
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                personalData = new PersonalData
+                                {
+                                    PatientId = reader["PatientId"]?.ToString(),
+                                    FirstName = reader["FirstName"]?.ToString(),
+                                    MiddleName = reader["MiddleName"]?.ToString(),
+                                    LastName = reader["LastName"]?.ToString(),
+                                    PreferredName = reader["PreferredName"]?.ToString(),
+                                    BirthDate = reader["BirthDate"]?.ToString(),
+                                    Age = reader["Age"] != DBNull.Value ? Convert.ToInt32(reader["Age"]) : 0,
+                                    Sex = reader["Sex"]?.ToString(),
+                                    SocialSecurityNumber = reader["SocialSecurityNumber"]?.ToString(),
+                                    PreferredLanguage = reader["PreferredLanguage"]?.ToString(),
+                                    Ethnicity = reader["Ethnicity"]?.ToString(),
+                                    MaritalStatus = reader["MaritalStatus"]?.ToString(),
+                                    Occupation = reader["Occupation"]?.ToString(),
+                                    Employer = reader["Employer"]?.ToString(),
+                                    Email = reader["Email"]?.ToString(),
+                                    PhoneHome = reader["PhoneHome"]?.ToString(),
+                                    PhoneWork = reader["PhoneWork"]?.ToString(),
+                                    PhoneCell = reader["PhoneCell"]?.ToString(),
+                                    PreferredContact = reader["PreferredContact"]?.ToString(),
+                                    AddressStreet = reader["AddressStreet"]?.ToString(),
+                                    AddressCity = reader["AddressCity"]?.ToString(),
+                                    AddressState = reader["AddressState"]?.ToString(),
+                                    AddressZip = reader["AddressZip"]?.ToString(),
+                                    BillingStreet = reader["BillingStreet"]?.ToString(),
+                                    BillingCity = reader["BillingCity"]?.ToString(),
+                                    BillingState = reader["BillingState"]?.ToString(),
+                                    BillingZip = reader["BillingZip"]?.ToString(),
+                                    Operation = reader["Operation"]?.ToString(),
+                                    CreatedAt = reader["CreatedAt"]?.ToString(),
+                                    PatientIdNumber = reader["PatientIdNumber"]?.ToString()
+                                };
+                            }
+                        }
+                    }
+
+                    // 2️⃣ Get consultations for the patient
+                    if (personalData != null)
+                    {
+                        string consultQuery = $"SELECT * FROM {_schema}.Tbl_PatientConsultations WHERE PatientId = @PatientId";
+                        using (var cmd = new SqlCommand(consultQuery, connection))
+                        {
+                            cmd.Parameters.AddWithValue("@PatientId", patientId);
+
+                            using (var reader = await cmd.ExecuteReaderAsync())
+                            {
+                                while (await reader.ReadAsync())
+                                {
+                                    loopList.Add(new PatientConsultLoop
+                                    {
+                                        ConsultationId = reader["ConsultationId"]?.ToString(),
+                                        PatientId = reader["PatientId"]?.ToString(),
+                                        ConsultationDate = reader["ConsultationDate"]?.ToString(),
+                                        ConsultationType = reader["ConsultationType"]?.ToString(),
+                                        Reason = reader["Reason"]?.ToString(),
+                                        DoctorName = reader["DoctorName"]?.ToString(),
+                                        Notes = reader["Notes"]?.ToString(),
+                                        CreatedAt = reader["CreatedAt"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedAt"]) : (DateTime?)null,
+                                        VisitLoop = reader["VisitLoop"]?.ToString(),
+                                        LoopCount = reader["LoopCount"] != DBNull.Value ? Convert.ToInt32(reader["LoopCount"]) : 0
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 3️⃣ Return combined result
+                if (personalData != null)
+                {
+                    personalData.loopData = loopList;
+                    return Ok(personalData);
+                }
+                else
+                {
+                    return NotFound($"No patient found with ID {patientId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
 
 
 

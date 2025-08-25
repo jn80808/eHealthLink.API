@@ -302,6 +302,125 @@ namespace eHealthLink.API.Controllers
             }
         }
 
+        [HttpGet("ChronicConditionStatus")]
+        public async Task<IActionResult> GetChronicConditionStatus()
+        {
+            try
+            {
+                var statuses = new List<string>();
+
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Operation", "ChronicConditionStatus");
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            statuses.Add(reader.GetString(0)); // first column "Status"
+                        }
+                    }
+                }
+
+                if (statuses.Any())
+                {
+                    return Ok(statuses); // JSON array in Swagger
+                }
+                else
+                {
+                    return NotFound("No chronic condition statuses found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+
+        [HttpGet("RequiresDiagnosticCheck")]
+        public async Task<IActionResult> GetRequiresDiagnosticCheck()
+        {
+            try
+            {
+                var checks = new List<string>();
+
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Operation", "RequiresDiagnosticCheck");
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            checks.Add(reader.GetString(0)); // first column "RequiresCheck"
+                        }
+                    }
+                }
+
+                if (checks.Any())
+                {
+                    return Ok(checks); // JSON array in Swagger
+                }
+                else
+                {
+                    return NotFound("No diagnostic check records found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+        [HttpGet("DiagnosticCheckDetails")]
+        public async Task<IActionResult> GetDiagnosticCheckDetails()
+        {
+            try
+            {
+                var details = new List<string>();
+
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Operation", "DiagnosticCheckDetails");
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            details.Add(reader.GetString(0)); // first column "DiagnosticCheckDetails"
+                        }
+                    }
+                }
+
+                if (details.Any())
+                {
+                    return Ok(details); // JSON array in Swagger
+                }
+                else
+                {
+                    return NotFound("No diagnostic check details found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+
 
     }
 }

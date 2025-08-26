@@ -4,7 +4,7 @@
     {
         public string ConsultationId { get; set; }
         public string PatientId { get; set; }
-        public string ConsultationDate { get; set; }
+        public DateTime? ConsultationDate { get; set; }
         public string? ConsultationType { get; set; }
         public string? Reason { get; set; }
         public string? DoctorName { get; set; }

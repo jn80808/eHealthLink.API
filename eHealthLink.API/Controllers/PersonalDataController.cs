@@ -119,7 +119,7 @@ namespace eHealthLink.API.Controllers
             model.MiddleName = model.MiddleName == "null" ? string.Empty : model.MiddleName;
             model.LastName = model.LastName == "null" ? string.Empty : model.LastName;
             model.PreferredName = model.PreferredName == "null" ? string.Empty : model.PreferredName;
-            model.BirthDate = model.BirthDate == "null" ? string.Empty : model.BirthDate;
+            if (model.BirthDate == null || model.BirthDate == DateTime.MinValue) model.BirthDate = null;
             model.Age = model.Age ?? 0;
             model.Sex = model.Sex == "null" ? string.Empty : model.Sex;
             model.SocialSecurityNumber = model.SocialSecurityNumber == "null" ? string.Empty : model.SocialSecurityNumber;
@@ -142,7 +142,7 @@ namespace eHealthLink.API.Controllers
             model.BillingState = model.BillingState == "null" ? string.Empty : model.BillingState;
             model.BillingZip = model.BillingZip == "null" ? string.Empty : model.BillingZip;
             model.Operation = model.Operation == "null" ? string.Empty : model.Operation;
-            model.CreatedAt = model.CreatedAt == "null" ? string.Empty : model.CreatedAt;
+            if (model.CreatedAt == null || model.CreatedAt == DateTime.MinValue) model.CreatedAt = null;
             model.PatientId = model.PatientId == "null" ? string.Empty : model.PatientId;
 
 
@@ -202,7 +202,7 @@ namespace eHealthLink.API.Controllers
 
 
 
-        [HttpPut("{PatientId}")]
+        [HttpPut("Update/{PatientId}")]
         public async Task<IActionResult> UpdatePatientData(string PatientId, [FromBody] PersonalData model)
         {
             // Default value mapping
@@ -210,7 +210,7 @@ namespace eHealthLink.API.Controllers
             model.MiddleName = model.MiddleName == "null" ? string.Empty : model.MiddleName;
             model.LastName = model.LastName == "null" ? string.Empty : model.LastName;
             model.PreferredName = model.PreferredName == "null" ? string.Empty : model.PreferredName;
-            model.BirthDate = model.BirthDate == "null" ? string.Empty : model.BirthDate;
+            if (model.BirthDate == null || model.BirthDate == DateTime.MinValue) model.BirthDate = null;
             model.Age = model.Age ?? 0;
             model.Sex = model.Sex == "null" ? string.Empty : model.Sex;
             model.SocialSecurityNumber = model.SocialSecurityNumber == "null" ? string.Empty : model.SocialSecurityNumber;
@@ -233,7 +233,7 @@ namespace eHealthLink.API.Controllers
             model.BillingState = model.BillingState == "null" ? string.Empty : model.BillingState;
             model.BillingZip = model.BillingZip == "null" ? string.Empty : model.BillingZip;
             model.Operation = model.Operation == "null" ? "UPDATE" : model.Operation;
-            model.CreatedAt = model.CreatedAt == "null" ? string.Empty : model.CreatedAt;
+            if (model.CreatedAt == null || model.CreatedAt == DateTime.MinValue) model.CreatedAt = null;
             model.PatientId = string.IsNullOrWhiteSpace(model.PatientId) ? PatientId : model.PatientId;
 
             try
@@ -287,7 +287,7 @@ namespace eHealthLink.API.Controllers
 
 
 
-        [HttpDelete("{PatientId}")]
+        [HttpDelete("Delete/{PatientId}")]
         public async Task<IActionResult> DeletePatientRecord(string PatientId)
         {
             using (var connection = new SqlConnection(_connectionString))
@@ -323,7 +323,7 @@ namespace eHealthLink.API.Controllers
             model.MiddleName = model.MiddleName == "null" ? string.Empty : model.MiddleName;
             model.LastName = model.LastName == "null" ? string.Empty : model.LastName;
             model.PreferredName = model.PreferredName == "null" ? string.Empty : model.PreferredName;
-            model.BirthDate = model.BirthDate == "null" ? string.Empty : model.BirthDate;
+            if (model.BirthDate == null || model.BirthDate == DateTime.MinValue) model.BirthDate = null;
             model.Age ??= 0;
             model.Sex = model.Sex == "null" ? string.Empty : model.Sex;
             model.SocialSecurityNumber = model.SocialSecurityNumber == "null" ? string.Empty : model.SocialSecurityNumber;
@@ -346,7 +346,7 @@ namespace eHealthLink.API.Controllers
             model.BillingState = model.BillingState == "null" ? string.Empty : model.BillingState;
             model.BillingZip = model.BillingZip == "null" ? string.Empty : model.BillingZip;
             model.Operation = model.Operation == "null" ? string.Empty : model.Operation;
-            model.CreatedAt = model.CreatedAt == "null" ? string.Empty : model.CreatedAt;
+            if (model.CreatedAt == null || model.CreatedAt == DateTime.MinValue) model.CreatedAt = null;
             model.PatientId = model.PatientId == "null" ? string.Empty : model.PatientId;
 
             string insertedPatientId = string.Empty;
@@ -366,8 +366,8 @@ namespace eHealthLink.API.Controllers
                         command.Parameters.AddWithValue("@MiddleName", model.MiddleName);
                         command.Parameters.AddWithValue("@LastName", model.LastName);
                         command.Parameters.AddWithValue("@PreferredName", model.PreferredName);
-                        command.Parameters.AddWithValue("@BirthDate", model.BirthDate);
-                        command.Parameters.AddWithValue("@Age", model.Age);
+                        command.Parameters.AddWithValue("@BirthDate", (object?)model.BirthDate ?? DBNull.Value);
+                        command.Parameters.AddWithValue("@Age", model.Age ?? 0);
                         command.Parameters.AddWithValue("@Sex", model.Sex);
                         command.Parameters.AddWithValue("@SocialSecurityNumber", model.SocialSecurityNumber);
                         command.Parameters.AddWithValue("@PreferredLanguage", model.PreferredLanguage);
@@ -388,8 +388,8 @@ namespace eHealthLink.API.Controllers
                         command.Parameters.AddWithValue("@BillingCity", model.BillingCity);
                         command.Parameters.AddWithValue("@BillingState", model.BillingState);
                         command.Parameters.AddWithValue("@BillingZip", model.BillingZip);
-                        command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt);
-                        command.Parameters.AddWithValue("@PatientId", model.PatientId);
+                        command.Parameters.AddWithValue("@CreatedAt", (object?)model.CreatedAt ?? DBNull.Value);
+                        //command.Parameters.AddWithValue("@PatientId", model.PatientId);
 
                         using (var reader = await command.ExecuteReaderAsync())
                         {
@@ -411,15 +411,16 @@ namespace eHealthLink.API.Controllers
 
                                 loopCommand.Parameters.AddWithValue("@Operation", "INSERT_CONSULTATION");
                                 loopCommand.Parameters.AddWithValue("@ConsultationId", loop.ConsultationId ?? string.Empty);
-                                loopCommand.Parameters.AddWithValue("@PatientId", insertedPatientId);
-                                loopCommand.Parameters.AddWithValue("@ConsultationDate", loop.ConsultationDate ?? string.Empty);
+                                //loopCommand.Parameters.AddWithValue("@PatientId", insertedPatientId);
+                                loopCommand.Parameters.AddWithValue("@ConsultationDate", (object?)loop.ConsultationDate ?? DBNull.Value);
                                 loopCommand.Parameters.AddWithValue("@ConsultationType", loop.ConsultationType ?? string.Empty);
                                 loopCommand.Parameters.AddWithValue("@Reason", loop.Reason ?? string.Empty);
                                 loopCommand.Parameters.AddWithValue("@DoctorName", loop.DoctorName ?? string.Empty);
                                 loopCommand.Parameters.AddWithValue("@Notes", loop.Notes ?? string.Empty);
-                                loopCommand.Parameters.AddWithValue("@CreatedAt", loop.CreatedAt ?? (object)DBNull.Value);
+                                loopCommand.Parameters.AddWithValue("@CreatedAt", (object?)loop.CreatedAt ?? DBNull.Value);
                                 loopCommand.Parameters.AddWithValue("@VisitLoop", loop.VisitLoop ?? string.Empty);
                                 loopCommand.Parameters.AddWithValue("@LoopCount", loop.LoopCount ?? 0);
+
 
                                 await loopCommand.ExecuteNonQueryAsync();
                             }
@@ -447,7 +448,7 @@ namespace eHealthLink.API.Controllers
                 {
                     await connection.OpenAsync();
 
-                    // 1️⃣ Get main patient record
+                    // Get main patient record
                     string patientQuery = $"SELECT * FROM {_schema}.Tbl_Patients WHERE PatientId = @PatientId";
                     using (var cmd = new SqlCommand(patientQuery, connection))
                     {
@@ -464,7 +465,9 @@ namespace eHealthLink.API.Controllers
                                     MiddleName = reader["MiddleName"]?.ToString(),
                                     LastName = reader["LastName"]?.ToString(),
                                     PreferredName = reader["PreferredName"]?.ToString(),
-                                    BirthDate = reader["BirthDate"]?.ToString(),
+                                    BirthDate = reader["BirthDate"] != DBNull.Value
+                                            ? Convert.ToDateTime(reader["BirthDate"])
+                                            : (DateTime?)null,
                                     Age = reader["Age"] != DBNull.Value ? Convert.ToInt32(reader["Age"]) : 0,
                                     Sex = reader["Sex"]?.ToString(),
                                     SocialSecurityNumber = reader["SocialSecurityNumber"]?.ToString(),
@@ -487,14 +490,17 @@ namespace eHealthLink.API.Controllers
                                     BillingState = reader["BillingState"]?.ToString(),
                                     BillingZip = reader["BillingZip"]?.ToString(),
                                     Operation = reader["Operation"]?.ToString(),
-                                    CreatedAt = reader["CreatedAt"]?.ToString(),
+                                    CreatedAt = reader["CreatedAt"] == DBNull.Value
+                                        ? (DateTime?)null
+                                        : Convert.ToDateTime(reader["CreatedAt"]),
+
                                     PatientIdNumber = reader["PatientIdNumber"]?.ToString()
                                 };
                             }
                         }
                     }
 
-                    // 2️⃣ Get consultations for the patient
+                    //  Get consultations for the patient
                     if (personalData != null)
                     {
                         string consultQuery = $"SELECT * FROM {_schema}.Tbl_PatientConsultations WHERE PatientId = @PatientId";
@@ -510,7 +516,7 @@ namespace eHealthLink.API.Controllers
                                     {
                                         ConsultationId = reader["ConsultationId"]?.ToString(),
                                         PatientId = reader["PatientId"]?.ToString(),
-                                        ConsultationDate = reader["ConsultationDate"]?.ToString(),
+                                        ConsultationDate = reader["ConsultationDate"] != DBNull.Value ? Convert.ToDateTime(reader["ConsultationDate"]): (DateTime?)null,
                                         ConsultationType = reader["ConsultationType"]?.ToString(),
                                         Reason = reader["Reason"]?.ToString(),
                                         DoctorName = reader["DoctorName"]?.ToString(),
@@ -525,7 +531,7 @@ namespace eHealthLink.API.Controllers
                     }
                 }
 
-                // 3️⃣ Return combined result
+                // Return combined result
                 if (personalData != null)
                 {
                     personalData.loopData = loopList;

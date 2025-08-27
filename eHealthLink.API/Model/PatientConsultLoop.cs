@@ -2,8 +2,10 @@
 {
     public class PatientConsultLoop
     {
-        public string ConsultationId { get; set; }
-        public string PatientId { get; set; }
+        public Guid? ConsultationId { get; set; }
+
+        public Guid? PatientId { get; set; }
+
         public DateTime? ConsultationDate { get; set; }
         public string? ConsultationType { get; set; }
         public string? Reason { get; set; }

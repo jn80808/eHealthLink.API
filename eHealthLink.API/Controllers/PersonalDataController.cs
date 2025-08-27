@@ -143,7 +143,10 @@ namespace eHealthLink.API.Controllers
             model.BillingZip = model.BillingZip == "null" ? string.Empty : model.BillingZip;
             model.Operation = model.Operation == "null" ? string.Empty : model.Operation;
             if (model.CreatedAt == null || model.CreatedAt == DateTime.MinValue) model.CreatedAt = null;
-            model.PatientId = model.PatientId == "null" ? string.Empty : model.PatientId;
+            // PatientId handling
+            if (!model.PatientId.HasValue || model.PatientId == Guid.Empty)
+                model.PatientId = Guid.NewGuid();
+
 
 
             using (var connection = new SqlConnection(_connectionString))
@@ -234,7 +237,8 @@ namespace eHealthLink.API.Controllers
             model.BillingZip = model.BillingZip == "null" ? string.Empty : model.BillingZip;
             model.Operation = model.Operation == "null" ? "UPDATE" : model.Operation;
             if (model.CreatedAt == null || model.CreatedAt == DateTime.MinValue) model.CreatedAt = null;
-            model.PatientId = string.IsNullOrWhiteSpace(model.PatientId) ? PatientId : model.PatientId;
+            if (!model.PatientId.HasValue || model.PatientId == Guid.Empty)
+                model.PatientId = Guid.NewGuid();
 
             try
             {
@@ -347,7 +351,10 @@ namespace eHealthLink.API.Controllers
             model.BillingZip = model.BillingZip == "null" ? string.Empty : model.BillingZip;
             model.Operation = model.Operation == "null" ? string.Empty : model.Operation;
             if (model.CreatedAt == null || model.CreatedAt == DateTime.MinValue) model.CreatedAt = null;
-            model.PatientId = model.PatientId == "null" ? string.Empty : model.PatientId;
+            // PatientId handling
+            if (!model.PatientId.HasValue || model.PatientId == Guid.Empty)
+                model.PatientId = Guid.NewGuid();
+
 
             string insertedPatientId = string.Empty;
 
@@ -410,7 +417,7 @@ namespace eHealthLink.API.Controllers
                                 loopCommand.CommandType = CommandType.StoredProcedure;
 
                                 loopCommand.Parameters.AddWithValue("@Operation", "INSERT_CONSULTATION");
-                                loopCommand.Parameters.AddWithValue("@ConsultationId", loop.ConsultationId ?? string.Empty);
+                                loopCommand.Parameters.AddWithValue("@ConsultationId", loop.ConsultationId);
                                 //loopCommand.Parameters.AddWithValue("@PatientId", insertedPatientId);
                                 loopCommand.Parameters.AddWithValue("@ConsultationDate", (object?)loop.ConsultationDate ?? DBNull.Value);
                                 loopCommand.Parameters.AddWithValue("@ConsultationType", loop.ConsultationType ?? string.Empty);
@@ -460,7 +467,7 @@ namespace eHealthLink.API.Controllers
                             {
                                 personalData = new PersonalData
                                 {
-                                    PatientId = reader["PatientId"]?.ToString(),
+                                    PatientId = reader["PatientId"] == DBNull.Value? (Guid?)null : Guid.Parse(reader["PatientId"].ToString()),
                                     FirstName = reader["FirstName"]?.ToString(),
                                     MiddleName = reader["MiddleName"]?.ToString(),
                                     LastName = reader["LastName"]?.ToString(),
@@ -514,8 +521,8 @@ namespace eHealthLink.API.Controllers
                                 {
                                     loopList.Add(new PatientConsultLoop
                                     {
-                                        ConsultationId = reader["ConsultationId"]?.ToString(),
-                                        PatientId = reader["PatientId"]?.ToString(),
+                                        ConsultationId = reader["ConsultationId"] == DBNull.Value ? (Guid?)null : (Guid)reader["ConsultationId"],
+                                        PatientId = personalData.PatientId,
                                         ConsultationDate = reader["ConsultationDate"] != DBNull.Value ? Convert.ToDateTime(reader["ConsultationDate"]): (DateTime?)null,
                                         ConsultationType = reader["ConsultationType"]?.ToString(),
                                         Reason = reader["Reason"]?.ToString(),

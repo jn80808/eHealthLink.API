@@ -32,7 +32,7 @@ namespace eHealthLink.API.Model
         public string? BillingZip { get; set; }
         public string? Operation { get; set; }
         public DateTime? CreatedAt { get; set; }
-        public string? PatientId { get; set; }
+        public Guid? PatientId { get; set; }
         public string? PatientIdNumber { get; set; }
 
         public List<PatientConsultLoop>loopData { get; set; }

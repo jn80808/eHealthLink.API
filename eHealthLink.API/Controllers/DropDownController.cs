@@ -372,7 +372,7 @@ namespace eHealthLink.API.Controllers
                 }
                 else
                 {
-                    return NotFound("No diagnostic check records found");
+                    return NotFound("No RequiresDiagnosticCheck check records found");
                 }
             }
             catch (Exception ex)
@@ -380,6 +380,7 @@ namespace eHealthLink.API.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+
 
         [HttpGet("DiagnosticCheckDetails")]
         public async Task<IActionResult> GetDiagnosticCheckDetails()
@@ -400,7 +401,7 @@ namespace eHealthLink.API.Controllers
                     {
                         while (await reader.ReadAsync())
                         {
-                            details.Add(reader.GetString(0)); // first column "DiagnosticCheckDetails"
+                            details.Add(reader.GetString(0)); 
                         }
                     }
                 }
@@ -419,6 +420,220 @@ namespace eHealthLink.API.Controllers
                 return StatusCode(500, "Internal Server Error: " + ex.Message);
             }
         }
+
+
+        [HttpGet("SexGender")]
+        public async Task<IActionResult> GetSexGender()
+        {
+            try
+            {
+                var details = new List<string>();
+
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Operation", "SexGender");
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            details.Add(reader.GetString(0)); 
+                        }
+                    }
+                }
+
+                if (details.Any())
+                {
+                    return Ok(details); // JSON array in Swagger
+                }
+                else
+                {
+                    return NotFound("No SexGender check details found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+
+
+        [HttpGet("MaritalStatus")]
+        public async Task<IActionResult> GetMaritalStatus()
+        {
+            try
+            {
+                var details = new List<string>();
+
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Operation", "MaritalStatus");
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            details.Add(reader.GetString(0));
+                        }
+                    }
+                }
+
+                if (details.Any())
+                {
+                    return Ok(details); // JSON array in Swagger
+                }
+                else
+                {
+                    return NotFound("No MaritalStatus check details found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+
+
+        [HttpGet("Ethnicity")]
+        public async Task<IActionResult> GetEthnicity()
+        {
+            try
+            {
+                var details = new List<string>();
+
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Operation", "Ethnicity");
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            details.Add(reader.GetString(0));
+                        }
+                    }
+                }
+
+                if (details.Any())
+                {
+                    return Ok(details); // JSON array in Swagger
+                }
+                else
+                {
+                    return NotFound("No Ethnicity check details found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+
+        [HttpGet("PreferredContact")]
+        public async Task<IActionResult> GetPreferredContact()
+        {
+            try
+            {
+                var details = new List<string>();
+
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Operation", "PreferredContact");
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            details.Add(reader.GetString(0));
+                        }
+                    }
+                }
+
+                if (details.Any())
+                {
+                    return Ok(details); // JSON array in Swagger
+                }
+                else
+                {
+                    return NotFound("No PreferredContact check details found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+
+
+        [HttpGet("PreferredPaymentMethod")]
+        public async Task<IActionResult> GetPreferredPaymentMethod()
+        {
+            try
+            {
+                var details = new List<string>();
+
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Operation", "PreferredPaymentMethod");
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            details.Add(reader.GetString(0));
+                        }
+                    }
+                }
+
+                if (details.Any())
+                {
+                    return Ok(details); // JSON array in Swagger
+                }
+                else
+                {
+                    return NotFound("No PreferredPaymentMethod check details found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

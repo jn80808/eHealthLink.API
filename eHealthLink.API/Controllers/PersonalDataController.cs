@@ -110,17 +110,15 @@ namespace eHealthLink.API.Controllers
         }
 
 
-
         //HttpPost 
-        [HttpPost]
-        public async Task<IActionResult> PostData([FromBody] PersonalData model)
+        [HttpPost("INSERT1DT")]
+        public async Task<IActionResult> PostData([FromBody] PPatientForm model)
         {
+            // Normalize string values
             model.FirstName = model.FirstName == "null" ? string.Empty : model.FirstName;
             model.MiddleName = model.MiddleName == "null" ? string.Empty : model.MiddleName;
             model.LastName = model.LastName == "null" ? string.Empty : model.LastName;
             model.PreferredName = model.PreferredName == "null" ? string.Empty : model.PreferredName;
-            if (model.BirthDate == null || model.BirthDate == DateTime.MinValue) model.BirthDate = null;
-            model.Age = model.Age ?? 0;
             model.Sex = model.Sex == "null" ? string.Empty : model.Sex;
             model.SocialSecurityNumber = model.SocialSecurityNumber == "null" ? string.Empty : model.SocialSecurityNumber;
             model.PreferredLanguage = model.PreferredLanguage == "null" ? string.Empty : model.PreferredLanguage;
@@ -142,15 +140,27 @@ namespace eHealthLink.API.Controllers
             model.BillingState = model.BillingState == "null" ? string.Empty : model.BillingState;
             model.BillingZip = model.BillingZip == "null" ? string.Empty : model.BillingZip;
             model.Operation = model.Operation == "null" ? string.Empty : model.Operation;
-            if (model.CreatedAt == null || model.CreatedAt == DateTime.MinValue) model.CreatedAt = null;
-            // PatientId handling
+
+            model.Age = model.Age ?? 0;
+
+            // Handle CreatedAt
+            if (model.CreatedAt == null || model.CreatedAt == DateTime.MinValue)
+                model.CreatedAt = null;
+
+            // Handle PatientId
             if (!model.PatientId.HasValue || model.PatientId == Guid.Empty)
                 model.PatientId = Guid.NewGuid();
 
-
+            // Convert BirthDate string → DateTime?
+            DateTime? parsedBirthDate = null;
+            if (!string.IsNullOrWhiteSpace(model.BirthDate))
+            {
+                if (DateTime.TryParse(model.BirthDate, out var dt))
+                    parsedBirthDate = dt;
+            }
 
             using (var connection = new SqlConnection(_connectionString))
-
+            {
                 try
                 {
                     using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
@@ -158,12 +168,12 @@ namespace eHealthLink.API.Controllers
                         await connection.OpenAsync();
                         command.CommandType = CommandType.StoredProcedure;
 
-                        command.Parameters.AddWithValue("@Operation", "INSERT");
+                        command.Parameters.AddWithValue("@Operation", "INSERT1DT");
                         command.Parameters.AddWithValue("@FirstName", model.FirstName);
                         command.Parameters.AddWithValue("@MiddleName", model.MiddleName);
                         command.Parameters.AddWithValue("@LastName", model.LastName);
                         command.Parameters.AddWithValue("@PreferredName", model.PreferredName);
-                        command.Parameters.AddWithValue("@BirthDate", model.BirthDate);
+                        command.Parameters.AddWithValue("@BirthDate", parsedBirthDate ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@Age", model.Age);
                         command.Parameters.AddWithValue("@Sex", model.Sex);
                         command.Parameters.AddWithValue("@SocialSecurityNumber", model.SocialSecurityNumber);
@@ -186,21 +196,18 @@ namespace eHealthLink.API.Controllers
                         command.Parameters.AddWithValue("@BillingState", model.BillingState);
                         command.Parameters.AddWithValue("@BillingZip", model.BillingZip);
                         command.Parameters.AddWithValue("@Operation", model.Operation);
-                        command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt);
+                        command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@PatientId", model.PatientId);
 
                         await command.ExecuteNonQueryAsync();
-
                     }
                     return Ok("Data Inserted Successfully");
                 }
-
                 catch (Exception ex)
                 {
-                    //Handle execeptions appropiately (logging,error response,etc.)
-                    return StatusCode(500, "Internal Server Error" + ex.Message);
+                    return StatusCode(500, "Internal Server Error: " + ex.Message);
                 }
-
+            }
         }
 
 

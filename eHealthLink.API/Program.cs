@@ -7,6 +7,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Configure Kestrel to use your PFX certificate
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(7076, listenOptions =>
+    {
+        listenOptions.UseHttps("certs/localhost.pfx", "1");
+    });
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -15,6 +25,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 app.UseHttpsRedirection();
 

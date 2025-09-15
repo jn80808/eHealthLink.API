@@ -112,7 +112,7 @@ namespace eHealthLink.API.Controllers
 
         //HttpPost 
         [HttpPost("INSERT1DT")]
-        public async Task<IActionResult> PostData([FromBody] PPatientForm model)
+        public async Task<IActionResult> PostData([FromBody] PatientForm model)
         {
             // Normalize string values
             model.FirstName = model.FirstName == "null" ? string.Empty : model.FirstName;

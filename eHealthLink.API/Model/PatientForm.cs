@@ -1,6 +1,6 @@
 ﻿namespace eHealthLink.API.Model
 {
-    public class PPatientForm
+    public class PatientForm
     {
         public string? FirstName { get; set; }
         public string? MiddleName { get; set; }

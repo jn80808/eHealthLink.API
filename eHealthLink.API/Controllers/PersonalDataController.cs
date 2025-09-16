@@ -180,8 +180,11 @@ namespace eHealthLink.API.Controllers
                 model.CreatedAt = null;
 
             // Handle PatientId
-            if (!model.PatientId.HasValue || model.PatientId == Guid.Empty)
-                model.PatientId = Guid.NewGuid();
+            if (string.IsNullOrWhiteSpace(model.PatientId) || !Guid.TryParse(model.PatientId, out var parsedGuid))
+            {
+                // Generate new Guid if missing or invalid
+                parsedGuid = Guid.NewGuid();
+            }
 
             // Convert BirthDate string → DateTime?
             DateTime? parsedBirthDate = null;

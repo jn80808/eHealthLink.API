@@ -30,7 +30,7 @@
         public string? BillingZip { get; set; }
         public string? Operation { get; set; }
         public DateTime? CreatedAt { get; set; }
-        public Guid? PatientId { get; set; }
+        public string PatientId { get; set; }
         public string?  CustomPatientId { get; set; }
     }
 }

@@ -110,6 +110,38 @@ namespace eHealthLink.API.Controllers
         }
 
 
+        //GETNewID
+        [HttpGet("GETNewID")]
+        public async Task<IActionResult> GETNewID()
+        {
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand($"{_schema}.Prc_PersonalData", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Operation", "GETNewID");
+
+                    await connection.OpenAsync();
+
+                    object result = await command.ExecuteScalarAsync(); // retrieve single value
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        return Ok(result.ToString());
+                    }
+                    else
+                    {
+                        return NotFound("No GETNewID found");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
+        }
+
         //HttpPost 
         [HttpPost("INSERT1DT")]
         public async Task<IActionResult> PostData([FromBody] PatientForm model)
@@ -159,6 +191,8 @@ namespace eHealthLink.API.Controllers
                     parsedBirthDate = dt;
             }
 
+            model.CustomPatientId = model.CustomPatientId == "null" ? string.Empty : model.CustomPatientId;
+
             using (var connection = new SqlConnection(_connectionString))
             {
                 try
@@ -198,6 +232,7 @@ namespace eHealthLink.API.Controllers
                         command.Parameters.AddWithValue("@Operation", model.Operation);
                         command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@PatientId", model.PatientId);
+                        command.Parameters.AddWithValue("@CustomPatientId", model.CustomPatientId);
 
                         await command.ExecuteNonQueryAsync();
                     }

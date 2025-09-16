@@ -171,7 +171,7 @@ namespace eHealthLink.API.Controllers
             model.BillingCity = model.BillingCity == "null" ? string.Empty : model.BillingCity;
             model.BillingState = model.BillingState == "null" ? string.Empty : model.BillingState;
             model.BillingZip = model.BillingZip == "null" ? string.Empty : model.BillingZip;
-            model.Operation = model.Operation == "null" ? string.Empty : model.Operation;
+            
 
             model.Age = model.Age ?? 0;
 
@@ -229,7 +229,6 @@ namespace eHealthLink.API.Controllers
                         command.Parameters.AddWithValue("@BillingCity", model.BillingCity);
                         command.Parameters.AddWithValue("@BillingState", model.BillingState);
                         command.Parameters.AddWithValue("@BillingZip", model.BillingZip);
-                        command.Parameters.AddWithValue("@Operation", model.Operation);
                         command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@PatientId", model.PatientId);
                         command.Parameters.AddWithValue("@CustomPatientId", model.CustomPatientId);

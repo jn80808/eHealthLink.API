@@ -233,7 +233,7 @@ namespace eHealthLink.API.Controllers
                         command.Parameters.AddWithValue("@BillingState", model.BillingState);
                         command.Parameters.AddWithValue("@BillingZip", model.BillingZip);
                         command.Parameters.AddWithValue("@CreatedAt", model.CreatedAt ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@PatientId", model.PatientId);
+                        command.Parameters.AddWithValue("@PatientId", parsedGuid);
                         command.Parameters.AddWithValue("@CustomPatientId", model.CustomPatientId);
 
                         await command.ExecuteNonQueryAsync();
